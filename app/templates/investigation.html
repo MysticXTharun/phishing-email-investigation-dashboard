@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigation #{{ investigation.id }} | PhishGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <div>
+                <h2>PhishGuard</h2>
+                <span>SOC Investigation Platform</span>
+            </div>
+        </div>
+
+        <nav>
+            <a href="/">Dashboard</a>
+            <a class="active" href="#">Investigation Details</a>
+            <a href="/docs" target="_blank">API Documentation</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            Analysis Engine Online
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <a class="back-link" href="/">← Back to Dashboard</a>
+                <h1>Investigation #{{ investigation.id }}</h1>
+                <p>Analyzed on {{ investigation.created_at }}</p>
+            </div>
+
+            <span class="verdict large {{ investigation.verdict | lower | replace(' ', '-') }}">
+                {{ investigation.verdict }}
+            </span>
+        </header>
+
+        <section class="result-summary">
+            <article class="risk-card">
+                <span>Risk Score</span>
+                <strong>{{ investigation.risk_score }}</strong>
+                <small>out of 100</small>
+
+                <div class="large-score-track">
+                    <div
+                        class="score-fill"
+                        data-score="{{ investigation.risk_score }}"
+                    ></div>
+                </div>
+            </article>
+
+            <article class="panel email-summary">
+                <h2>Email Summary</h2>
+
+                <dl class="details-list">
+                    <dt>Subject</dt>
+                    <dd>{{ investigation.subject }}</dd>
+
+                    <dt>Sender</dt>
+                    <dd>{{ investigation.sender }}</dd>
+
+                    <dt>Reply-To</dt>
+                    <dd>{{ investigation.reply_to }}</dd>
+
+                    <dt>Return-Path</dt>
+                    <dd>{{ investigation.return_path }}</dd>
+
+                    <dt>Message ID</dt>
+                    <dd>{{ investigation.message_id }}</dd>
+
+                    <dt>SHA-256</dt>
+                    <dd class="hash-value">{{ investigation.email_hash }}</dd>
+                </dl>
+            </article>
+        </section>
+
+        <section class="result-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Email Authentication</h2>
+                </div>
+
+                <div class="authentication-grid">
+                    {% for protocol, status in investigation.authentication.items() %}
+                    <div class="authentication-item">
+                        <strong>{{ protocol | upper }}</strong>
+                        <span class="auth-status {{ status }}">{{ status | upper }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Detection Indicators</h2>
+                </div>
+
+                <ul class="indicator-list">
+                    {% for indicator in investigation.indicators %}
+                    <li>
+                        <span>!</span>
+                        {{ indicator }}
+                    </li>
+                    {% else %}
+                    <li class="clean-indicator">
+                        <span>✓</span>
+                        No suspicious indicators detected
+                    </li>
+                    {% endfor %}
+                </ul>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Indicators of Compromise</h2>
+            </div>
+
+            <div class="ioc-grid">
+                <div class="ioc-section">
+                    <h3>URLs ({{ investigation.urls | length }})</h3>
+
+                    {% for url in investigation.urls %}
+                    <code>{{ url }}</code>
+                    {% else %}
+                    <p class="muted">No URLs detected</p>
+                    {% endfor %}
+                </div>
+
+                <div class="ioc-section">
+                    <h3>Domains ({{ investigation.domains | length }})</h3>
+
+                    {% for domain in investigation.domains %}
+                    <code>{{ domain }}</code>
+                    {% else %}
+                    <p class="muted">No domains detected</p>
+                    {% endfor %}
+                </div>
+
+                <div class="ioc-section">
+                    <h3>IP Addresses ({{ investigation.ips | length }})</h3>
+
+                    {% for ip in investigation.ips %}
+                    <code>{{ ip }}</code>
+                    {% else %}
+                    <p class="muted">No IP addresses detected</p>
+                    {% endfor %}
+                </div>
+
+                <div class="ioc-section">
+                    <h3>Attachments ({{ investigation.attachments | length }})</h3>
+
+                    {% for attachment in investigation.attachments %}
+                    <code>{{ attachment }}</code>
+                    {% else %}
+                    <p class="muted">No attachments detected</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', path='/js/app.js') }}"></script>
+</body>
+</html>

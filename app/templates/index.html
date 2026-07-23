@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Investigation Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <div>
+                <h2>PhishGuard</h2>
+                <span>SOC Investigation Platform</span>
+            </div>
+        </div>
+
+        <nav>
+            <a class="active" href="/">Dashboard</a>
+            <a href="#analyzer">Analyze Email</a>
+            <a href="#history">Investigation History</a>
+            <a href="/docs" target="_blank">API Documentation</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            Analysis Engine Online
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1>Phishing Email Investigation</h1>
+                <p>Analyze email headers, authentication results and indicators of compromise.</p>
+            </div>
+            <span class="analyst-badge">SOC Analyst Console</span>
+        </header>
+
+        <section class="stats-grid">
+            <article class="stat-card total">
+                <span>Total Investigations</span>
+                <strong>{{ statistics.total }}</strong>
+            </article>
+
+            <article class="stat-card malicious">
+                <span>Malicious</span>
+                <strong>{{ statistics.malicious }}</strong>
+            </article>
+
+            <article class="stat-card suspicious">
+                <span>Suspicious</span>
+                <strong>{{ statistics.suspicious }}</strong>
+            </article>
+
+            <article class="stat-card safe">
+                <span>Likely Safe</span>
+                <strong>{{ statistics.likely_safe }}</strong>
+            </article>
+        </section>
+
+        <section id="analyzer" class="panel analyzer-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Analyze Suspicious Email</h2>
+                    <p>Paste the complete raw email, including headers and body.</p>
+                </div>
+                <span class="engine-label">Static Analysis</span>
+            </div>
+
+            <form action="/analyze" method="post">
+                <label for="raw_email">Raw email content</label>
+
+                <textarea
+                    id="raw_email"
+                    name="raw_email"
+                    required
+                    spellcheck="false"
+                    placeholder="From: Security Team &lt;security@example.com&gt;
+Reply-To: attacker@malicious.example
+Subject: Urgent - Verify your account
+Authentication-Results: spf=fail; dkim=fail; dmarc=fail
+
+Click here to verify your account: https://malicious.example/login"
+                ></textarea>
+
+                <div class="form-actions">
+                    <button type="button" class="secondary-button" id="load-sample">
+                        Load Sample
+                    </button>
+
+                    <button type="button" class="secondary-button" id="clear-email">
+                        Clear
+                    </button>
+
+                    <button type="submit" class="primary-button">
+                        Analyze Email
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section id="history" class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Recent Investigations</h2>
+                    <p>Previously analyzed emails and their risk verdicts.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            <th>Sender</th>
+                            <th>Risk Score</th>
+                            <th>Verdict</th>
+                            <th>Created</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in investigations %}
+                        <tr>
+                            <td>#{{ item.id }}</td>
+                            <td>{{ item.subject }}</td>
+                            <td>{{ item.sender }}</td>
+                            <td>
+                                <div class="score-cell">
+                                    <div class="score-track">
+                                        <div
+                                            class="score-fill"
+                                            data-score="{{ item.risk_score }}"
+                                        ></div>
+                                    </div>
+                                    <span>{{ item.risk_score }}/100</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="verdict {{ item.verdict | lower | replace(' ', '-') }}">
+                                    {{ item.verdict }}
+                                </span>
+                            </td>
+                            <td>{{ item.created_at }}</td>
+                            <td>
+                                <a class="view-link" href="/investigations/{{ item.id }}">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                No investigations yet. Analyze your first suspicious email.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', path='/js/app.js') }}"></script>
+</body>
+</html>
